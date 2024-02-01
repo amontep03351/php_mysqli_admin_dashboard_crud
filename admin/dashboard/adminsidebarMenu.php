@@ -25,18 +25,12 @@
           Table
         </a>
       </li>
-      <li class="nav-item">
+      <!-- <li class="nav-item">
         <a class="nav-link" href="#" onclick="load_contentadmin('managecustomers.php');">
           <span data-feather="users"></span>
           Customers
         </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#" onclick="load_contentadmin('manageemployee.php');">
-          <span data-feather="users"></span>
-          Employee
-        </a>
-      </li>
+      </li>  -->
       <li class="nav-item">
         <a class="nav-link" href="#" onclick="load_contentadmin('ReportSale.php');">
           <span data-feather="bar-chart-2"></span>
