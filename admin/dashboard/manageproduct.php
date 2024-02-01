@@ -1,0 +1,215 @@
+<div class="container-fluid mt-5">
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+      New Product
+    </button>
+    <hr>
+    <div class="table-responsive">
+      <table id="productTable" class="table table-bordered table-striped">
+          <thead>
+              <tr>
+                  <th>Product Name</th>
+                  <th>Product Type ID</th>
+                  <th>Product Price</th>
+                  <th>Product Image</th>
+                  <th>Product Status</th>
+              </tr>
+          </thead>
+          <tbody>
+              <!-- Product data will be loaded here dynamically -->
+          </tbody>
+      </table>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modal New Product</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="container mt-5">
+            <form id="productForm" enctype="multipart/form-data">
+              <input type="hidden" name="typeaction" value="Create">
+                <div class="form-group">
+                    <label for="productName">Product Name:</label>
+                    <input type="text" class="form-control" id="productName" name="product_name" required>
+                    <div id="nameError" class="text-danger"></div>
+                </div>
+                <div class="form-group">
+                    <label for="productTypeId">Product Type :</label>
+                    <select class="form-control" id="productTypeId" name="product_type_id" required>
+                    <?php
+                      include '../../actions/connect.php';
+                      $sql = "SELECT product_type_id , product_type_name FROM producttypes";
+
+                      $result = $conn->query($sql);
+
+                      $data = array();
+
+                      if ($result->num_rows > 0) {
+                          while ($row = $result->fetch_assoc()) {
+                              $product_type_id = $row['product_type_id'];
+                              $product_type_name = $row['product_type_name'];
+                              echo "<option value='".$product_type_id."'>".$product_type_name."</option>";
+                          }
+                      }
+
+                      // Close the database connection
+                      $conn->close();
+
+                     ?>
+                    </select>
+                    <div id="typeIdError" class="text-danger"></div>
+                </div>
+                <div class="form-group">
+                    <label for="productPrice">Product Price:</label>
+                    <input type="number" class="form-control" id="productPrice" name="product_price" required>
+                    <div id="priceError" class="text-danger"></div>
+                </div>
+                <div class="form-group">
+                    <label for="productImage">Product Image:</label>
+                    <input type="file" class="form-control-file" id="productImage" name="product_image" accept="image/*" required>
+                    <div id="imageError" class="text-danger"></div>
+                </div>
+                <div class="form-group">
+                    <label for="productStatus">Product Status:</label>
+                    <select class="form-control" id="productStatus" name="product_status" required>
+                        <option value="0">Inactive</option>
+                        <option value="1">Active</option>
+                    </select>
+                    <div id="statusError" class="text-danger"></div>
+                </div>
+                <button type="button" class="btn btn-primary" id="submitBtn">Submit</button>
+            </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+          $('#productTable').DataTable({
+             ajax: {
+                 url: 'actions/product.php', // Replace with the actual PHP file fetching product data
+                 type: 'POST',
+                 data: {
+                 'typeaction': 'select'
+                 },
+                 dataSrc: ''
+             },
+             columns: [
+                 { data: 'product_name' },
+                 { data: 'product_type_id' },
+                 { data: 'product_price' },
+                 {
+                     data: 'product_image',
+                     render: function (data, type, row) {
+                         return '<img src="http://localhost/ProjectPOS/admin/dashboard/actions/' + data + '" alt="Product Image" style="max-width: 100px; max-height: 100px;">';
+                     }
+                 },
+                 {
+                     data: 'product_status',
+                     render: function (data) {
+                         return data === '1' ? 'Active' : 'Inactive';
+                     }
+                 }
+             ]
+         });
+        // Update the label with the selected filename for the custom file input
+        $("#productImage").change(function () {
+            var fileName = $(this).val().split('\\').pop();
+            $(this).next('.custom-file-label').html(fileName);
+        });
+
+        $("#submitBtn").click(function () {
+             if (validateForm()) {
+
+               var formData = new FormData($("#productForm")[0]);
+
+               // Check for duplicate product by name
+               $.ajax({
+                   type: "POST",
+                   url: "actions/product.php", // Replace with the actual PHP file for duplicate checking
+                   data: { typeaction:'checkingduplicate',product_name: $("#productName").val() },
+                   success: function (response) {
+                       if (response === "duplicate") {
+                           alert("Error: Product with the same name already exists");
+                       } else {
+                           // No duplicate found, proceed with product creation
+                           $.ajax({
+                               type: "POST",
+                               url: "actions/product.php", // Replace with the actual PHP file for creating a product
+                               data: formData,
+                               contentType: false,
+                               processData: false,
+                               success: function (createResponse) {
+                                   alert(createResponse); // You can handle the response from the server here
+                               },
+                               error: function (xhr, status, error) {
+                                   console.error(xhr.responseText);
+                               }
+                           });
+                       }
+                   },
+                   error: function (xhr, status, error) {
+                       console.error(xhr.responseText);
+                   }
+               });
+              }
+           });
+
+
+        function validateForm() {
+
+            var valid = true;
+
+            // Clear previous error messages
+            $(".text-danger").text("");
+
+            // Validate product name
+            if ($("#productName").val().trim() === "") {
+                $("#nameError").text("Product name is required");
+                valid = false;
+            }
+
+            // Validate product type ID
+            if ($("#productTypeId").val().trim() === "") {
+                $("#typeIdError").text("Product type ID is required");
+                valid = false;
+            }
+
+            // Validate product price
+            var price = parseFloat($("#productPrice").val());
+            if (isNaN(price) || price <= 0) {
+                $("#priceError").text("Enter a valid product price");
+                valid = false;
+            }
+
+            // Validate product image
+            var allowedImageTypes = ["jpg", "jpeg", "png", "gif"];
+            var imageExtension = $("#productImage").val().split('.').pop().toLowerCase();
+            if ($.inArray(imageExtension, allowedImageTypes) === -1) {
+                $("#imageError").text("Only JPG, JPEG, PNG, and GIF file types are allowed");
+                valid = false;
+            }
+
+            // Validate product status
+            if ($("#productStatus").val() !== "0" && $("#productStatus").val() !== "1") {
+                $("#statusError").text("Invalid product status");
+                valid = false;
+            }
+
+            return valid;
+        }
+    });
+</script>
