@@ -270,10 +270,10 @@
                               product_type_id ='$productTypeId',
                               product_price ='$productPrice',
                               product_status ='$productStatus' ,
-                              product_image='$productImage' ,
+                              product_image='$productImage'
 
                              WHERE product_id='$product_id_to_update'";
-                             echo $update_sql;
+                              
               if ($conn->query($update_sql) === TRUE) {
                   echo "Product created successfully";
               } else {

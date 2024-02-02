@@ -1,4 +1,5 @@
 <div class="container-fluid mt-5">
+    <h3>Manage Products</h3>
     <!-- Button trigger modal -->
     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
       New Product
