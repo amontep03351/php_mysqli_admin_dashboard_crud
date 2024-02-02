@@ -31,5 +31,26 @@
     // Return the data as JSON
     header('Content-Type: application/json');
     echo json_encode($data);
+  }elseif ($typeaction =="get_realtime_data") {
+    
+    // Select data from the Products table
+    $sql = "SELECT a.*   FROM orders a ";
+
+    $result = $conn->query($sql);
+
+    $data = array();
+
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $data[] = $row;
+        }
+    }
+
+    // Close the database connection
+    $conn->close();
+
+    // Return the data as JSON
+    header('Content-Type: application/json');
+    echo json_encode($data);
   }
 ?>

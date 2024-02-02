@@ -22,8 +22,11 @@
         // Initialize DataTable
         var table = $('#ordersTable').DataTable({
             ajax: {
-                url: 'orders.php', // Replace with the actual PHP file fetching order data
+                url: 'actions/orders.php', // Replace with the actual PHP file fetching order data
                 type: 'POST',
+                data: {
+                'typeaction': 'select'
+                },
                 dataSrc: ''
             },
             columns: [
