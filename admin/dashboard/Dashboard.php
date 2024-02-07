@@ -23,8 +23,7 @@
 
 </div>
 <script type="text/javascript">
-  $(document).ready(function () {
-
+  $(document).ready(function () { 
     function_reloaddataold();
     setInterval(function_reloaddata, 30000);
   });
